@@ -1,0 +1,41 @@
+services:
+  # Frontend - Static Site
+  - type: static_site
+    name: lashbrows-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_BACKEND_URL
+        value: https://lashbrows-backend.onrender.com
+
+  # Backend - Node.js Web Service
+  - type: web
+    name: lashbrows-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGODB_URI
+        fromDatabase:
+          name: lashbrows-db
+          property: connectionString
+      - key: PORT
+        value: 5000
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: TECHNICIAN_EMAIL
+        sync: false
+      - key: CLIENT_EMAIL_FROM
+        sync: false
+      - key: FRONTEND_URL
+        value: https://lashbrows-frontend.onrender.com
+
+databases:
+  - name: lashbrows-db
+    plan: free
+

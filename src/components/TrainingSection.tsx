@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { GraduationCap, Award, Users, Star } from "lucide-react";
+import { GraduationCap, Award, Users, Star, AlertCircle, CheckCircle, Loader } from "lucide-react";
+import { traineeAPI } from "../services/api";
 
 const perks = [
   { icon: GraduationCap, label: "Certified Training" },
@@ -14,18 +15,50 @@ export default function TrainingSection() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const [form, setForm] = useState({ name: "", email: "", phone: "", experience: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const msg = encodeURIComponent(
-      `Hi Ada! I'd like to register for lash training.\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nExperience: ${form.experience}`
-    );
-    window.open(`https://wa.me/2348000000000?text=${msg}`, "_blank");
-    setSubmitted(true);
+    setError(null);
+
+    // Validation
+    if (!form.name.trim()) {
+      setError("Please enter your name");
+      return;
+    }
+    if (!form.email.trim()) {
+      setError("Please enter your email");
+      return;
+    }
+    if (!form.phone.trim()) {
+      setError("Please enter your phone number");
+      return;
+    }
+    if (!form.experience) {
+      setError("Please select experience level");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await traineeAPI.registerTrainee({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        experienceLevel: form.experience,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to register");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,16 +126,29 @@ export default function TrainingSection() {
                 transition={{ type: "spring", stiffness: 300 }}
                 className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4"
               >
-                <Star size={28} className="text-white" />
+                <CheckCircle size={28} className="text-white" />
               </motion.div>
               <h3 className="font-playfair text-2xl font-semibold mb-2">You're Registered! 🎉</h3>
-              <p className="text-white/60">Ada will be in touch with training details shortly.</p>
+              <p className="text-white/60">We've received your application. Ada will review it and get in touch with training details within 24 hours.</p>
             </div>
           ) : (
             <>
               <h3 className="font-playfair text-2xl font-semibold mb-6 text-center">
                 Registration Form
               </h3>
+
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 flex gap-2 rounded-lg bg-red-500/10 border border-red-500/30 p-3"
+                >
+                  <AlertCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-500">{error}</p>
+                </motion.div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
@@ -168,9 +214,17 @@ export default function TrainingSection() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   type="submit"
-                  className="w-full btn-glow text-white font-semibold py-4 rounded-xl tracking-wide text-base"
+                  disabled={isLoading}
+                  className="w-full btn-glow text-white font-semibold py-4 rounded-xl tracking-wide text-base disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
-                  Register for Training →
+                  {isLoading ? (
+                    <>
+                      <Loader size={16} className="animate-spin" />
+                      Registering...
+                    </>
+                  ) : (
+                    <>Register for Training →</>
+                  )}
                 </motion.button>
               </form>
             </>

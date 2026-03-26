@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { Check, Info, Calendar, Clock } from "lucide-react";
+import { Check, Info, Calendar, Clock, AlertCircle, Loader } from "lucide-react";
+import { bookingAPI } from "../services/api";
 
 type Service = { id: string; name: string; price: number };
 
@@ -82,6 +83,15 @@ export default function BookingSection() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
 
+  // Client info
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+
+  // States
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const toggleLash = (s: Service) => setSelectedLash(prev => prev?.id === s.id ? null : s);
   const toggleBrow = (s: Service) => setSelectedBrow(prev => prev?.id === s.id ? null : s);
   const toggleExtra = (s: Service) => {
@@ -95,17 +105,58 @@ export default function BookingSection() {
     (selectedBrow?.price ?? 0) +
     selectedExtras.reduce((acc, e) => acc + e.price, 0);
 
-  const handleProceed = () => {
-    const msg = encodeURIComponent(
-      `Hello Ada! I'd like to book:\n` +
-      (selectedLash ? `• ${selectedLash.name} — ${formatNaira(selectedLash.price)}\n` : "") +
-      (selectedBrow ? `• ${selectedBrow.name} — ${formatNaira(selectedBrow.price)}\n` : "") +
-      selectedExtras.map(e => `• ${e.name} — ${formatNaira(e.price)}`).join("\n") +
-      `\nTotal: ${formatNaira(total)}` +
-      (selectedDate ? `\nDate: ${selectedDate}` : "") +
-      (selectedTime ? `\nTime: ${selectedTime}` : "")
-    );
-    window.open(`https://wa.me/2349139198918?text=${msg}`, "_blank");
+  const handleProceed = async () => {
+    setError(null);
+
+    // Validation
+    if (!clientName.trim()) {
+      setError("Please enter your name");
+      return;
+    }
+    if (!clientEmail.trim()) {
+      setError("Please enter your email");
+      return;
+    }
+    if (!clientPhone.trim()) {
+      setError("Please enter your phone number");
+      return;
+    }
+    if (!selectedDate) {
+      setError("Please select a date");
+      return;
+    }
+    if (!selectedTime) {
+      setError("Please select a time");
+      return;
+    }
+    if (total === 0) {
+      setError("Please select at least one service");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await bookingAPI.createBooking({
+        clientName,
+        clientEmail,
+        clientPhone,
+        services: {
+          lash: selectedLash,
+          brow: selectedBrow,
+          extras: selectedExtras,
+        },
+        date: selectedDate,
+        time: selectedTime,
+        totalAmount: total,
+      });
+
+      // Redirect to Paystack payment
+      window.location.href = response.paymentUrl;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create booking");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -262,14 +313,74 @@ export default function BookingSection() {
                   {formatNaira(total)}
                 </span>
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 flex gap-2 rounded-lg bg-red-500/10 border border-red-500/30 p-3"
+                >
+                  <AlertCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-500">{error}</p>
+                </motion.div>
+              )}
+
+              {/* Client Info Form */}
+              <div className="mt-4 space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                    Your Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="Full name"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    placeholder="+234 XXX XXXX XXX"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+              </div>
+
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleProceed}
-                disabled={total === 0}
-                className="mt-5 w-full btn-glow text-white font-semibold py-3.5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+                disabled={total === 0 || isLoading}
+                className="mt-4 w-full btn-glow text-white font-semibold py-3.5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
               >
-                Proceed to Book →
+                {isLoading ? (
+                  <>
+                    <Loader size={16} className="animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>Proceed to Payment →</>
+                )}
               </motion.button>
             </motion.div>
 
