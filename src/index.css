@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600&family=Dancing+Script:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    /* Primary: Signature Pink */
+    --primary: 336 100% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 336 100% 75%;
+
+    /* Secondary: Deep Charcoal */
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    /* Muted: Nude / Beige */
+    --muted: 30 30% 95%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Accent: Rose Gold */
+    --accent: 15 60% 75%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 336 20% 88%;
+    --input: 336 20% 88%;
+    --ring: 336 100% 65%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 336 100% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 30% 95%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 336 20% 88%;
+    --sidebar-ring: 336 100% 65%;
+
+    /* Custom Brand Tokens */
+    --nude: 30 30% 90%;
+    --nude-dark: 25 25% 75%;
+    --charcoal: 0 0% 12%;
+    --off-white: 30 20% 97%;
+    --glass-bg: 0 0% 100%;
+    --glass-border: 336 30% 85%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(336 100% 65% / 0.15) 0%, hsl(0 0% 0% / 0.6) 100%);
+    --gradient-pink: linear-gradient(135deg, hsl(336 100% 65%), hsl(320 90% 72%));
+    --gradient-soft: linear-gradient(135deg, hsl(30 30% 97%), hsl(336 20% 94%));
+    --gradient-dark: linear-gradient(135deg, hsl(0 0% 8%), hsl(336 30% 12%));
+
+    /* Shadows */
+    --shadow-pink: 0 8px 30px -8px hsl(336 100% 65% / 0.4);
+    --shadow-glass: 0 4px 24px hsl(336 30% 50% / 0.1), inset 0 1px 0 hsl(0 0% 100% / 0.6);
+    --shadow-elegant: 0 20px 60px -20px hsl(0 0% 0% / 0.15);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  /* Glassmorphism */
+  .glass {
+    background: hsl(var(--glass-bg) / 0.15);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--glass-border) / 0.3);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-white {
+    background: hsl(0 0% 100% / 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--primary) / 0.15);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-dark {
+    background: hsl(0 0% 0% / 0.25);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+  }
+
+  /* Neumorphism */
+  .neu {
+    background: hsl(var(--off-white));
+    box-shadow: 6px 6px 16px hsl(336 20% 80%), -6px -6px 16px hsl(0 0% 100%);
+  }
+
+  .neu-inset {
+    background: hsl(var(--off-white));
+    box-shadow: inset 4px 4px 10px hsl(336 20% 80%), inset -4px -4px 10px hsl(0 0% 100%);
+  }
+
+  /* Glow Button */
+  .btn-glow {
+    background: var(--gradient-pink);
+    box-shadow: var(--shadow-pink);
+    transition: all 0.3s ease;
+  }
+
+  .btn-glow:hover {
+    box-shadow: 0 12px 40px -8px hsl(336 100% 65% / 0.6);
+    transform: translateY(-2px);
+  }
+
+  /* Script accent */
+  .script {
+    font-family: 'Dancing Script', cursive;
+  }
+
+  /* Section headings */
+  .section-label {
+    font-family: 'Dancing Script', cursive;
+    color: hsl(var(--primary));
+  }
+
+  /* Pink shimmer */
+  .shimmer {
+    background: linear-gradient(90deg, hsl(336 20% 90%) 0%, hsl(336 30% 95%) 50%, hsl(336 20% 90%) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Ken Burns */
+  .ken-burns {
+    animation: kenBurns 8s ease-in-out infinite alternate;
+  }
+
+  /* Floating WhatsApp */
+  .floating-wa {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 9999;
+    background: #25D366;
+    border-radius: 50%;
+    width: 3.5rem;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px hsl(145 70% 50% / 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .floating-wa:hover {
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 0 16px 32px hsl(145 70% 50% / 0.5);
+  }
+}
+
+@layer utilities {
+  .text-gradient-pink {
+    background: var(--gradient-pink);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-soft {
+    background: var(--gradient-soft);
+  }
+
+  .bg-gradient-dark {
+    background: var(--gradient-dark);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes kenBurns {
+  from { transform: scale(1) translate(0, 0); }
+  to { transform: scale(1.08) translate(-1%, -1%); }
+}
+
+@keyframes accordion-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
